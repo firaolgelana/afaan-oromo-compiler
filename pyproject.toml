@@ -1,0 +1,16 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "afaan-oromo-lang"
+version = "0.2.0"
+description = "Afaan Oromoo (.ao) to Python transpiler for beginners"
+requires-python = ">=3.10"
+
+[project.scripts]
+ao = "translator:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["src*"]

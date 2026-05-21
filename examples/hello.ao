@@ -1,0 +1,18 @@
+x = 10
+y = x + 5 * 2
+
+yoo (x > 5) {
+    maxxansi(x)
+} yookiin {
+    maxxansi(0)
+}
+
+hanga (x < 10) {
+    x = x + 1
+}
+
+hojii ida'uu(a, b) {
+    deebisi a + b
+}
+
+maxxansi(ida'uu(3, 4))
