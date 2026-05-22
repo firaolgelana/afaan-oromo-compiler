@@ -1,0 +1,3 @@
+# Transpiler output (.ao sources stay; .py goes here)
+python/**/*.py
+!python/.gitkeep

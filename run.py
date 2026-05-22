@@ -2,8 +2,14 @@
 """
 Run an .ao program in one step (transpile + execute).
 
+Transpiles to python/ (like TypeScript outDir), then runs the generated .py.
+
 Usage:
     python run.py path/to/program.ao
+
+Shell alias (from this repo):
+    alias aoc='python3 /path/to/afaan-oromo-lang/run.py'
+    aoc test.ao
 """
 
 from __future__ import annotations

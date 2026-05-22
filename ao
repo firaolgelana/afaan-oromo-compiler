@@ -1,7 +1,5 @@
 #!/usr/bin/env bash
-# Run an .ao file: ./ao program.ao
+# Run an .ao file: ./ao program.ao  (transpile to python/, then execute)
 set -euo pipefail
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PARENT="$(dirname "$DIR")"
-export PYTHONPATH="${PARENT}${PYTHONPATH:+:$PYTHONPATH}"
-exec python3 -m local_lang_compiler --run "$@"
+exec python3 "$DIR/run.py" "$@"

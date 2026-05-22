@@ -33,7 +33,7 @@ From the project folder:
 python3 run.py test.ao
 ```
 
-This transpiles `test.ao` → `test.py` and runs it automatically. Expected output:
+This transpiles `test.ao` → `python/test.py` and runs it automatically (your `.ao` source stays in place; generated Python lives under `python/`, like TypeScript’s `outDir`). Expected output:
 
 ```text
 10
@@ -43,11 +43,11 @@ This transpiles `test.ao` → `test.py` and runs it automatically. Expected outp
 ### 3. Or compile and run separately
 
 ```bash
-# Compile only (creates test.py)
+# Compile only (creates python/test.py)
 python3 translator.py test.ao
 
 # Run the generated Python yourself
-python3 test.py
+python3 python/test.py
 ```
 
 ## Commands
@@ -58,8 +58,21 @@ python3 test.py
 | **Compile only** | `python3 translator.py program.ao` |
 | **Compile and run** | `python3 translator.py program.ao --run` |
 | **Shell shortcut** | `./ao program.ao` |
+| **Alias (like `tsc`)** | `alias aoc='python3 /path/to/afaan-oromo-lang/run.py'` then `aoc test.ao` |
 
 > **Note:** `python3 program.ao` does **not** work — Python cannot read `.ao` syntax directly. Always use `run.py`, `translator.py --run`, or `./ao`.
+
+### Output folder (`python/`)
+
+All transpiled `.py` files go under **`python/`** at the project root (configured in `pythoncompiler/`). Example:
+
+| Source | Generated |
+|--------|-----------|
+| `test.ao` | `python/test.py` |
+| `examples/hello.ao` | `python/examples/hello.py` |
+| `examples/math.ao` (imported) | `python/examples/math_ao.py` |
+
+You only edit `.ao` files; `python/` is build output (ignored by git).
 
 ## Keywords (Afaan Oromoo → Python)
 
@@ -144,10 +157,10 @@ The compiler looks for the file in:
 1. The same folder as the importing `.ao` file
 2. A `lib/` subfolder
 
-Generated files:
+Generated files (under `python/`):
 
-- Main program: `app.ao` → `app.py`
-- Library: `math.ao` → `math_ao.py` (the `_ao` suffix avoids clashing with Python’s built-in `math` module)
+- Main program: `app.ao` → `python/examples/app.py`
+- Library: `math.ao` → `python/examples/math_ao.py` (the `_ao` suffix avoids clashing with Python’s built-in `math` module)
 
 Run the example:
 
@@ -160,10 +173,12 @@ python3 run.py examples/app.ao
 ```
 afaan-oromo-lang/
 ├── README.md
-├── translator.py      # CLI: compile / --run
+├── translator.py        # CLI: compile / --run
 ├── run.py               # CLI: compile + run (shortcut)
 ├── ao                   # Shell wrapper for run.py
 ├── pyproject.toml
+├── pythoncompiler/      # Output paths (python/ outDir)
+├── python/              # Generated .py (build output)
 ├── src/
 │   ├── lexer/           # Tokenizer
 │   ├── parser/          # AST + recursive descent parser
@@ -188,7 +203,16 @@ Errors are reported in **Afaan Oromoo**, for example:
 | Empty file | `Dogoggora: Faayiliin duwwaa dha. Barruu .ao kee barreessi (Save: Ctrl+S).` |
 | Module not found | `Dogoggora: Faayilii galmee '…' hin argamne.` |
 
-## Optional: install the `ao` command
+## Optional: shell alias or install
+
+**Alias** (run any `.ao` file; output goes to `python/`):
+
+```bash
+alias aoc='python3 /full/path/to/afaan-oromo-lang/run.py'
+aoc test.ao
+```
+
+**Install** the `ao` command:
 
 ```bash
 pip install -e .
@@ -201,7 +225,7 @@ ao test.ao
 
 1. Save `test.ao` in your editor (**Ctrl+S**).
 2. Confirm on disk: `cat test.ao` should show your code.
-3. Check `test.py` — it should contain lines like `print(10)`.
+3. Check `python/test.py` — it should contain lines like `print(10)`.
 
 **`python3 test.ao` fails**
 
@@ -214,7 +238,3 @@ See `examples/hello.ao` for variables, `yoo` / `yookiin`, `hanga`, and functions
 ```bash
 python3 run.py examples/hello.ao
 ```
-
-## License
-
-Open source — use and modify for learning and teaching.

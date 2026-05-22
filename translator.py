@@ -3,7 +3,7 @@
 CLI entry point for the Afaan Oromoo -> Python transpiler.
 
 Usage:
-    python translator.py <source.ao>              # transpile to <source>.py
+    python translator.py <source.ao>              # transpile to python/<source>.py
     python translator.py <source.ao> --run        # transpile, then execute
     python run.py <source.ao>                     # same as --run
     python -m local_lang_compiler <source.ao> --run   # from repo parent dir

@@ -10,6 +10,8 @@ from ..errors.diagnostics import Diagnostics, SourceLocation
 from ..lexer.lexer import Lexer, strip_shebang
 from ..parser.ast import Import, Program
 from ..parser.parser import Parser
+from pythoncompiler.paths import find_project_root
+
 from ..utils.file_io import output_path_for, read_source, write_output
 from ..utils.modules import normalize_import_spec, resolve_module_path
 
@@ -19,13 +21,15 @@ class ProjectCompiler:
 
     def __init__(self) -> None:
         self._compiled: Set[Path] = set()
+        self._project_root: Path | None = None
 
     def compile_entry(self, entry: Path) -> Path:
         """Transpile entry and dependencies. Returns path to generated main .py."""
         self._compiled.clear()
         entry = entry.resolve()
+        self._project_root = find_project_root(entry)
         self._compile_recursive(entry, [], is_entry=True)
-        return output_path_for(entry, is_entry=True)
+        return output_path_for(entry, project_root=self._project_root, is_entry=True)
 
     def _compile_recursive(
         self, source_path: Path, stack: List[Path], *, is_entry: bool
@@ -52,7 +56,10 @@ class ProjectCompiler:
                 self._compile_recursive(dep, stack, is_entry=False)
 
         generator = PythonGenerator()
-        write_output(output_path_for(path, is_entry=is_entry), generator.generate(program))
+        out = output_path_for(
+            path, project_root=self._project_root, is_entry=is_entry
+        )
+        write_output(out, generator.generate(program))
         self._compiled.add(path)
 
     def _parse_file(self, path: Path) -> Program:
