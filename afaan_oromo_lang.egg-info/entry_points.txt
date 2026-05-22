@@ -1,0 +1,3 @@
+[console_scripts]
+ao = translator:main
+aoc = run:main
