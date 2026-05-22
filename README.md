@@ -8,38 +8,63 @@ Write programs in **Afaan Oromoo** (`.ao` files); the transpiler compiles them t
 
 **Requirements:** Python 3.10+
 
-## How to run
+## Getting started (new users — after `git clone`)
 
-### 1. Set up the `aoc` alias (recommended)
-
-Add to `~/.bashrc` or `~/.zshrc` (use your real project path):
+GitHub only ships the **compiler and examples**. It does **not** copy your personal `~/.bashrc` / `~/.zshrc` aliases or nano settings — each person runs setup once on their machine.
 
 ```bash
-alias aoc='python3 /home/firaol/Documents/Projects/afaan-oromo-lang/run.py'
+git clone https://github.com/YOUR_USER/afaan-oromo-lang.git
+cd afaan-oromo-lang
+./install.sh
 ```
 
-Reload the shell, then run any `.ao` file from anywhere:
+That installs two global commands: **`aoc`** (run) and **`ao`** (compile). Then, from any folder:
 
 ```bash
+aoc path/to/program.ao
+```
+
+Manual install (same result):
+
+```bash
+pip install -e .
 aoc test.ao
-aoc examples/hello.ao
 ```
 
-`aoc` transpiles to `python/` and executes the result in one step (like TypeScript compile + run).
+### What is not in the repo?
 
-### 2. Other ways
+| On your PC only | In GitHub / clone |
+|-----------------|-------------------|
+| `alias aoc=...` in `~/.bashrc` | No — optional; `install.sh` replaces this |
+| Nano/editor config | No |
+| Generated `python/*.py` | No (built when you run `aoc`) |
+| VS Code extension installed | No — folder `vscode-oromolang/` is included; user installs it once |
+
+### Optional: syntax highlighting (Cursor / VS Code)
+
+1. **Extensions** → **Install from Folder…** (or “Install Extension from Location…”)
+2. Choose `vscode-oromolang` inside the cloned repo
+3. Reload the window → open a `.ao` file → language **OromoLang**
+
+### Optional: manual `aoc` alias
+
+If you prefer not to use `pip install`, add to `~/.bashrc` or `~/.zshrc` (use the path where **you** cloned the repo):
+
+```bash
+alias aoc='python3 /path/to/afaan-oromo-lang/run.py'
+```
+
+## How to run
 
 | What | Command |
 |------|---------|
-| Run (transpile + execute) | `python3 run.py program.ao` |
-| Compile only | `python3 translator.py program.ao` |
-| Compile and run | `python3 translator.py program.ao --run` |
-| Shell script | `./ao program.ao` |
-| Installed CLI | `pip install -e .` then `ao program.ao` |
+| **Run** (transpile + execute) | `aoc program.ao` |
+| Compile only | `ao program.ao` or `python3 translator.py program.ao` |
+| From repo without pip | `python3 run.py program.ao` or `./ao program.ao` |
 
 Run generated Python manually: `python3 python/test.py`
 
-> `python3 program.ao` does **not** work — use `aoc`, `run.py`, or `./ao`.
+> `python3 program.ao` does **not** work — use `aoc` or `run.py`.
 
 **Save your file** (Ctrl+S) before running. An empty file on disk produces no output.
 
