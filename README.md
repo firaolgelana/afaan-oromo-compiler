@@ -58,17 +58,49 @@ aoc test.ao
 | `alias aoc=...` in `~/.bashrc` | No — optional; `install.sh` replaces this |
 | Nano/editor config | No |
 | Generated `python/*.py` | No (built when you run `aoc`) |
-| VS Code extension installed | No — folder `vscode-oromolang/` is included; user installs it once |
+| VS Code / Cursor colors | No — install highlighting once (below) |
 
-### Optional: syntax highlighting (Cursor / VS Code)
+### Syntax highlighting & colors (Cursor / VS Code)
 
-1. **Extensions** → **Install from Folder…** (or “Install Extension from Location…”)
-2. Choose `vscode-oromolang` inside the cloned repo
-3. Reload the window → open a `.ao` file → language **OromoLang**
+Install **once** after clone. Reload the editor, then open a `.ao` file (language: **OromoLang**).
 
-### Optional: manual `aoc` alias
+More detail: [`vscode-oromolang/README.md`](vscode-oromolang/README.md)
 
-If you prefer not to use `pip install`, add to `~/.bashrc` or `~/.zshrc` (use the path where **you** cloned the repo):
+#### Option A — Symlink from your clone (Linux / macOS / Git Bash)
+
+Replace the path with **where you cloned** the repo, then run:
+
+```bash
+ln -s /path/to/afaan-oromo-lang/vscode-oromolang ~/.cursor/extensions/oromolang
+```
+
+Example (Linux):
+
+```bash
+ln -s /home/firaol/Documents/Projects/afaan-oromo-lang/vscode-oromolang ~/.cursor/extensions/oromolang
+```
+
+Reload Cursor. Edits under `vscode-oromolang/` in the repo apply immediately.
+
+#### Option B — Symlink on Windows (PowerShell)
+
+Run **PowerShell as Administrator**. Change `You` and the path to match your machine:
+
+```powershell
+New-Item -ItemType SymbolicLink -Force `
+  -Path "$env:USERPROFILE\.cursor\extensions\oromolang" `
+  -Target "C:\Users\You\Documents\afaan-oromo-lang\vscode-oromolang"
+```
+
+Or in **Git Bash** on Windows:
+
+```bash
+ln -s "/c/Users/You/Documents/afaan-oromo-lang/vscode-oromolang" \
+  "$USERPROFILE/.cursor/extensions/oromolang"
+```
+
+Reload Cursor.
+
 
 ```bash
 alias aoc='python3 /path/to/afaan-oromo-lang/run.py'
