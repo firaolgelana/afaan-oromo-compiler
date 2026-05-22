@@ -1,0 +1,39 @@
+# 1. Array methods
+t = [1, 2, 3]
+t.dabali(4)
+t.baasi()
+t.garagalchi()
+maxxansi(t) # Should be [3, 2, 1]
+
+# 2. String methods
+barreeffama = "Afaan Oromoo"
+maxxansi(barreeffama.qubeeguddaa())
+maxxansi(barreeffama.qoqqoodi(" "))
+
+# 3. Dictionary methods
+nama = {"maqaa": "Abdii", "umrii": 25}
+maxxansi(nama.furtuuwwan())
+maxxansi(nama.gatiiwwan())
+maxxansi(nama.argadhu("hojii", "Hin beekamu"))
+
+# 4. Tuples & Sets
+tuuta = {1, 2, 2, 3}
+tuuta_dhaabbataa = (10, 20)
+maxxansi(tuuta)
+maxxansi(tuuta_dhaabbataa)
+
+# 5. Multi-line Strings
+barreeffama_dheer = """Kuni
+barreeffama
+sarara baayyee qabu dha."""
+maxxansi(barreeffama_dheer)
+
+# 6. List Comprehension
+lakkoofsoota = [1, 2, 3, 4, 5]
+dachaa = [x * 2 marsaa x keessa lakkoofsoota yoo x % 2 == 0]
+maxxansi(dachaa) # Should be [4, 8]
+
+# 7. Helper functions
+maxxansi(qindeessi([5, 1, 4])) # Should be [1, 4, 5]
+maxxansi(tarree(lakkoofsa_waliin(["a", "b"]))) # Should be [(0, 'a'), (1, 'b')]
+maxxansi(tarree(walitti_hidhi([1, 2], ["a", "b"]))) # Should be [(1, 'a'), (2, 'b')]

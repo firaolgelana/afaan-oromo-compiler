@@ -21,7 +21,7 @@ from .ast import (
     ExprStmt,
     Expression,
     ForLoop,
-    FunctionCall,
+    Call,
     FunctionDef,
     GlobalStmt,
     Identifier,
@@ -40,6 +40,16 @@ from .ast import (
     While,
     With,
     Yield,
+    StringLiteral,
+    Subscript,
+    Attribute,
+    Dictionary,
+    ListLiteral,
+    AugAssign,
+    IncDecStmt,
+    TupleLiteral,
+    SetLiteral,
+    ListComprehension,
 )
 
 
@@ -148,15 +158,33 @@ class Parser:
             return Pass()
         if self.match(TokenType.WITH):
             return self.parse_with()
-        if self.match(TokenType.IDENTIFIER) and self.peek(1).type == TokenType.EQ:
-            return self.parse_assignment()
         if self.match(TokenType.PRINT):
             return ExprStmt(expression=self.parse_print_call())
-        if self.match(TokenType.IDENTIFIER) and self.peek(1).type == TokenType.LPAREN:
-            return ExprStmt(expression=self.parse_function_call())
 
-        self.diagnostics.raise_error("invalid_syntax", self.location())
-        raise DiagnosticError(self.diagnostics.MESSAGES["invalid_syntax"], self.location())
+        # Prefix increment/decrement
+        if self.match(TokenType.PLUSPLUS, TokenType.MINUSMINUS):
+            op_tok = self.advance()
+            target = self.parse_postfix()
+            return IncDecStmt(target=target, op=op_tok.value, is_postfix=False)
+
+        expr = self.parse_expression()
+
+        # Postfix increment/decrement
+        if self.match(TokenType.PLUSPLUS, TokenType.MINUSMINUS):
+            op_tok = self.advance()
+            return IncDecStmt(target=expr, op=op_tok.value, is_postfix=True)
+
+        if self.match(TokenType.EQ):
+            self.advance()
+            value = self.parse_expression()
+            return Assign(target=expr, value=value)
+
+        if self.match(TokenType.PLUSEQ, TokenType.MINUSEQ):
+            op_tok = self.advance()
+            value = self.parse_expression()
+            return AugAssign(target=expr, op=op_tok.value, value=value)
+
+        return ExprStmt(expression=expr)
 
     def parse_import_from_star(self) -> Import:
         self.advance()  # fuudhu or irraa
@@ -186,12 +214,6 @@ class Parser:
             raise DiagnosticError(self.diagnostics.MESSAGES["missing_rbrace"], self.location())
         self.expect(TokenType.RBRACE)
         return body
-
-    def parse_assignment(self) -> Assign:
-        name_tok = self.expect(TokenType.IDENTIFIER)
-        self.expect(TokenType.EQ)
-        value = self.parse_expression()
-        return Assign(name=name_tok.value, value=value)
 
     def parse_if(self) -> If:
         self.advance()  # yoo
@@ -285,7 +307,12 @@ class Parser:
     def parse_class_def(self) -> ClassDef:
         self.advance()  # caasaa
         name_tok = self.expect(TokenType.IDENTIFIER)
-        return ClassDef(name=name_tok.value, body=self.parse_block())
+        base_class = None
+        if self.match(TokenType.LPAREN):
+            self.advance()
+            base_class = self.parse_expression()
+            self.expect(TokenType.RPAREN)
+        return ClassDef(name=name_tok.value, body=self.parse_block(), base_class=base_class)
 
     def parse_return(self) -> Return:
         self.advance()
@@ -339,7 +366,7 @@ class Parser:
         self.expect(TokenType.RPAREN)
         return With(context=context, body=self.parse_block())
 
-    def parse_print_call(self) -> FunctionCall:
+    def parse_print_call(self) -> Call:
         self.advance()
         self.expect(TokenType.LPAREN)
         args: List[Expression] = []
@@ -349,19 +376,7 @@ class Parser:
                 self.advance()
                 args.append(self.parse_expression())
         self.expect(TokenType.RPAREN)
-        return FunctionCall(name="maxxansi", args=args)
-
-    def parse_function_call(self) -> FunctionCall:
-        name_tok = self.advance()
-        self.expect(TokenType.LPAREN)
-        args: List[Expression] = []
-        if not self.match(TokenType.RPAREN):
-            args.append(self.parse_expression())
-            while self.match(TokenType.COMMA):
-                self.advance()
-                args.append(self.parse_expression())
-        self.expect(TokenType.RPAREN)
-        return FunctionCall(name=name_tok.value, args=args)
+        return Call(func=Identifier(name="maxxansi"), args=args)
 
     def parse_expression(self) -> Expression:
         return self.parse_or()
@@ -393,12 +408,15 @@ class Parser:
 
     def parse_comparison(self) -> Expression:
         left = self.parse_additive()
-        while self.match(TokenType.EQEQ, TokenType.LT, TokenType.GT, TokenType.IN, TokenType.IS):
+        while self.match(TokenType.EQEQ, TokenType.BANGEQ, TokenType.LT, TokenType.GT, TokenType.LTE, TokenType.GTE, TokenType.IN, TokenType.IS):
             op_tok = self.advance()
             op_map = {
                 TokenType.EQEQ: "==",
+                TokenType.BANGEQ: "!=",
                 TokenType.LT: "<",
                 TokenType.GT: ">",
+                TokenType.LTE: "<=",
+                TokenType.GTE: ">=",
                 TokenType.IN: "in",
                 TokenType.IS: "is",
             }
@@ -416,7 +434,15 @@ class Parser:
 
     def parse_multiplicative(self) -> Expression:
         left = self.parse_unary()
-        while self.match(TokenType.STAR, TokenType.SLASH):
+        while self.match(TokenType.STAR, TokenType.SLASH, TokenType.MOD, TokenType.SLASHSLASH):
+            op_tok = self.advance()
+            right = self.parse_unary()
+            left = BinaryOp(left=left, op=op_tok.value, right=right)
+        return left
+
+    def parse_power(self) -> Expression:
+        left = self.parse_postfix()
+        if self.match(TokenType.STARSTAR):
             op_tok = self.advance()
             right = self.parse_unary()
             left = BinaryOp(left=left, op=op_tok.value, right=right)
@@ -427,9 +453,38 @@ class Parser:
             self.advance()
             operand = self.parse_unary()
             return BinaryOp(left=Number(0), op="-", right=operand)
-        return self.parse_primary()
+        return self.parse_power()
+
+    def parse_postfix(self) -> Expression:
+        expr = self.parse_primary()
+        while True:
+            if self.match(TokenType.LPAREN):
+                self.advance()
+                args: List[Expression] = []
+                if not self.match(TokenType.RPAREN):
+                    args.append(self.parse_expression())
+                    while self.match(TokenType.COMMA):
+                        self.advance()
+                        args.append(self.parse_expression())
+                self.expect(TokenType.RPAREN)
+                expr = Call(func=expr, args=args)
+            elif self.match(TokenType.LBRACKET):
+                self.advance()
+                index = self.parse_expression()
+                self.expect(TokenType.RBRACKET)
+                expr = Subscript(value=expr, index=index)
+            elif self.match(TokenType.DOT):
+                self.advance()
+                attr_tok = self.expect(TokenType.IDENTIFIER)
+                expr = Attribute(value=expr, attr=attr_tok.value)
+            else:
+                break
+        return expr
 
     def parse_primary(self) -> Expression:
+        if self.match(TokenType.STRING):
+            tok = self.advance()
+            return StringLiteral(value=tok.value)
         if self.match(TokenType.NUMBER):
             tok = self.advance()
             return Number(value=tok.value)
@@ -444,14 +499,81 @@ class Parser:
             return NoneLiteral()
         if self.match(TokenType.PRINT):
             return self.parse_print_call()
+        if self.match(TokenType.LBRACKET):
+            self.advance()
+            if self.match(TokenType.RBRACKET):
+                self.advance()
+                return ListLiteral(elements=[])
+            
+            first_expr = self.parse_expression()
+            if self.match(TokenType.FOR):
+                self.advance()
+                var_tok = self.expect(TokenType.IDENTIFIER)
+                self.expect(TokenType.IN)
+                iterable = self.parse_expression()
+                condition = None
+                if self.match(TokenType.IF):
+                    self.advance()
+                    condition = self.parse_expression()
+                self.expect(TokenType.RBRACKET)
+                return ListComprehension(element=first_expr, target=var_tok.value, iterable=iterable, condition=condition)
+            else:
+                elements = [first_expr]
+                while self.match(TokenType.COMMA):
+                    self.advance()
+                    if self.match(TokenType.RBRACKET):
+                        break
+                    elements.append(self.parse_expression())
+                self.expect(TokenType.RBRACKET)
+                return ListLiteral(elements=elements)
+        if self.match(TokenType.LBRACE):
+            self.advance()
+            if self.match(TokenType.RBRACE):
+                self.advance()
+                return Dictionary(keys=[], values=[])
+            
+            first_expr = self.parse_expression()
+            if self.match(TokenType.COLON):
+                self.advance()
+                first_val = self.parse_expression()
+                keys = [first_expr]
+                values = [first_val]
+                while self.match(TokenType.COMMA):
+                    self.advance()
+                    if self.match(TokenType.RBRACE):
+                        break
+                    keys.append(self.parse_expression())
+                    self.expect(TokenType.COLON)
+                    values.append(self.parse_expression())
+                self.expect(TokenType.RBRACE)
+                return Dictionary(keys=keys, values=values)
+            else:
+                elements = [first_expr]
+                while self.match(TokenType.COMMA):
+                    self.advance()
+                    if self.match(TokenType.RBRACE):
+                        break
+                    elements.append(self.parse_expression())
+                self.expect(TokenType.RBRACE)
+                return SetLiteral(elements=elements)
         if self.match(TokenType.IDENTIFIER):
-            if self.peek(1).type == TokenType.LPAREN:
-                return self.parse_function_call()
             tok = self.advance()
             return Identifier(name=tok.value)
         if self.match(TokenType.LPAREN):
             self.advance()
+            if self.match(TokenType.RPAREN):
+                self.advance()
+                return TupleLiteral(elements=[])
             expr = self.parse_expression()
+            if self.match(TokenType.COMMA):
+                elements = [expr]
+                while self.match(TokenType.COMMA):
+                    self.advance()
+                    if self.match(TokenType.RPAREN):
+                        break
+                    elements.append(self.parse_expression())
+                self.expect(TokenType.RPAREN)
+                return TupleLiteral(elements=elements)
             self.expect(TokenType.RPAREN)
             return expr
 

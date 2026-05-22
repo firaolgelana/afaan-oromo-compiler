@@ -1,0 +1,37 @@
+# Math operators
+maxxansi(2 ** 10)
+maxxansi(7 // 2)
+
+# Built-ins
+maxxansi(desimaalii("3.14"))
+maxxansi(guddaa(5, 10))
+maxxansi(xiqqaa(5, 10))
+maxxansi(ida'uu([1, 2, 3]))
+maxxansi(naannessi(3.7))
+
+# OOP Inheritance and constructor
+caasaa Lubbu {
+    gocha __jalqaba__(ofii, umrii) {
+        ofii.umrii = umrii
+    }
+        
+    gocha dubbadhu(ofii) {
+        maxxansi("Lubbuu dubbatu")
+    }
+}
+
+caasaa Saree(Lubbu) {
+    gocha __jalqaba__(ofii, maqaa, umrii) {
+        ofii.maqaa = maqaa
+        ofii.umrii = umrii
+    }
+        
+    gocha dutu(ofii) {
+        maxxansi(ofii.maqaa + " ni duta!")
+    }
+}
+
+s1 = Saree("Bob", 3)
+s1.dubbadhu()
+s1.dutu()
+maxxansi(s1.umrii)

@@ -47,7 +47,7 @@
       "patterns": [
         {
           "name": "keyword.control.oromo",
-          "match": "\\b(?:gocha|deebisi|yoo|yookiin|hanga|yookaas|marsaa|citi|tarkaanfadhu|homaa|dhiisi|yaali|qabi|xumura|darbadhu|mirkaneessi|caasaa|haqi|fidi|irraa|akka|waliigalaa|ala|lakkisi|cinatti|eegi|dhokataa|waliin)\\b"
+          "match": "\\b(?:gocha|hojii|deebisi|yoo|yookiin|hanga|yookaas|marsaa|dhaabi|fufi|homaa|dhiisi|yaali|qabi|xumura|darbadhu|mirkaneessi|caasaa|haqi|fidi|irraa|fuudhu|akka|waliigalaa|ala|lakkisi|cinatti|eegi|dhokataa|waliin)\\b"
         },
         {
           "name": "constant.language.boolean.oromo",
@@ -63,7 +63,7 @@
         },
         {
           "name": "keyword.operator.oromo",
-          "match": "==|<=|>=|<|>|\\+|-|\\*|/|="
+          "match": "==|!=|<=|>=|<|>|\\+=|-=|\\+\\+|--|\\*\\*|//|\\+|-|\\*|/|%|="
         }
       ]
     },
@@ -71,7 +71,7 @@
       "patterns": [
         {
           "name": "support.function.oromo",
-          "match": "\\b(?:maxxansi|ibsi)\\b"
+          "match": "\\b(?:maxxansi|ibsi|dheerina|lakkoofsa|barruu|galchi|tarree|facaasii|gosa|ruut|pao|gatsirrii|paayii|desimaalii|guddaa|xiqqaa|ida'uu|naannessi|bani|dabali|baasi|haqi|qulqulleessi|tartiibessi|qoqqoodi|qubeeguddaa|qubeexiqqaa|furtuuwwan|gatiiwwan|qabiyyee|fidi|qindeessi|lakkoofsa_waliin|walitti_hidhi)\\b"
         }
       ]
     },

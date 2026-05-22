@@ -19,7 +19,7 @@ from ..parser.ast import (
     ExprStmt,
     Expression,
     ForLoop,
-    FunctionCall,
+    Call,
     FunctionDef,
     GlobalStmt,
     Identifier,
@@ -33,13 +33,28 @@ from ..parser.ast import (
     Raise,
     Return,
     Statement,
+    StringLiteral,
+    Subscript,
+    Attribute,
+    Dictionary,
+    ListLiteral,
+    AugAssign,
+    IncDecStmt,
     TryStmt,
     UnaryOp,
     While,
     With,
     Yield,
+    TupleLiteral,
+    SetLiteral,
+    ListComprehension,
 )
-from ..utils.modules import normalize_import_spec, python_module_name
+from ..utils.modules import (
+    is_native_module,
+    native_module_for,
+    normalize_import_spec,
+    python_module_name,
+)
 from ..utils.names import to_python_name
 
 
@@ -47,6 +62,22 @@ class PythonGenerator:
     """Walks the AST and produces executable Python code."""
 
     INDENT = "    "
+
+    BUILTIN_METHODS = {
+        "dabali": "append",
+        "baasi": "pop",
+        "haqi": "remove",
+        "qulqulleessi": "clear",
+        "tartiibessi": "sort",
+        "garagalchi": "reverse",
+        "qoqqoodi": "split",
+        "qubeeguddaa": "upper",
+        "qubeexiqqaa": "lower",
+        "furtuuwwan": "keys",
+        "gatiiwwan": "values",
+        "qabiyyee": "items",
+        "argadhu": "get",
+    }
 
     def __init__(self) -> None:
         self._lines: List[str] = []
@@ -68,9 +99,12 @@ class PythonGenerator:
         return "\n".join(self._lines) + "\n"
 
     def _emit_import(self, node: Import) -> None:
-        mod = python_module_name(
-            Path(normalize_import_spec(node.module)), is_entry=False
-        )
+        raw_spec = normalize_import_spec(node.module)
+        if is_native_module(raw_spec):
+            mod = native_module_for(raw_spec)
+        else:
+            mod = python_module_name(Path(raw_spec), is_entry=False)
+            
         if node.kind == "import":
             self._lines.append(f"import {mod}")
         else:
@@ -84,7 +118,12 @@ class PythonGenerator:
 
     def _emit_statement(self, stmt: Statement) -> None:
         if isinstance(stmt, Assign):
-            self._write(f"{to_python_name(stmt.name)} = {self._emit_expression(stmt.value)}")
+            self._write(f"{self._emit_expression(stmt.target)} = {self._emit_expression(stmt.value)}")
+        elif isinstance(stmt, AugAssign):
+            self._write(f"{self._emit_expression(stmt.target)} {stmt.op} {self._emit_expression(stmt.value)}")
+        elif isinstance(stmt, IncDecStmt):
+            py_op = "+= 1" if stmt.op == "++" else "-= 1"
+            self._write(f"{self._emit_expression(stmt.target)} {py_op}")
         elif isinstance(stmt, If):
             self._emit_if(stmt)
         elif isinstance(stmt, While):
@@ -193,7 +232,10 @@ class PythonGenerator:
     def _emit_function_def(self, node: FunctionDef) -> None:
         prefix = "async " if node.is_async else ""
         params = ", ".join(to_python_name(p) for p in node.params)
-        self._write(f"{prefix}def {to_python_name(node.name)}({params}):")
+        name = node.name
+        if name == "__jalqaba__":
+            name = "__init__"
+        self._write(f"{prefix}def {to_python_name(name)}({params}):")
         self._indent_level += 1
         for s in node.body:
             self._emit_statement(s)
@@ -201,7 +243,11 @@ class PythonGenerator:
         self._lines.append("")
 
     def _emit_class_def(self, node: ClassDef) -> None:
-        self._write(f"class {to_python_name(node.name)}:")
+        if node.base_class:
+            base_str = self._emit_expression(node.base_class)
+            self._write(f"class {to_python_name(node.name)}({base_str}):")
+        else:
+            self._write(f"class {to_python_name(node.name)}:")
         self._indent_level += 1
         if not node.body:
             self._write("pass")
@@ -219,6 +265,9 @@ class PythonGenerator:
         self._indent_level -= 1
 
     def _emit_expression(self, expr: Expression) -> str:
+        if isinstance(expr, StringLiteral):
+            # Use repr() to automatically wrap in quotes and escape characters
+            return repr(expr.value)
         if isinstance(expr, Number):
             if isinstance(expr.value, float):
                 return repr(expr.value)
@@ -228,6 +277,8 @@ class PythonGenerator:
         if isinstance(expr, NoneLiteral):
             return "None"
         if isinstance(expr, Identifier):
+            if expr.name in self.BUILTIN_CONSTANTS:
+                return self.BUILTIN_CONSTANTS[expr.name]
             return to_python_name(expr.name)
         if isinstance(expr, UnaryOp):
             return f"({expr.op} {self._emit_expression(expr.operand)})"
@@ -239,13 +290,84 @@ class PythonGenerator:
             if expr.op == "-":
                 return f"({left} - {right})"
             return f"({left} {expr.op} {right})"
-        if isinstance(expr, FunctionCall):
-            return self._emit_function_call(expr)
+        if isinstance(expr, Call):
+            return self._emit_call(expr)
+        if isinstance(expr, Subscript):
+            return f"{self._emit_expression(expr.value)}[{self._emit_expression(expr.index)}]"
+        if isinstance(expr, Attribute):
+            attr_name = expr.attr
+            if attr_name in self.BUILTIN_METHODS:
+                attr_name = self.BUILTIN_METHODS[attr_name]
+            else:
+                attr_name = to_python_name(attr_name)
+            return f"{self._emit_expression(expr.value)}.{attr_name}"
+        if isinstance(expr, ListLiteral):
+            elements = ", ".join(self._emit_expression(e) for e in expr.elements)
+            return f"[{elements}]"
+        if isinstance(expr, Dictionary):
+            pairs = []
+            for k, v in zip(expr.keys, expr.values):
+                pairs.append(f"{self._emit_expression(k)}: {self._emit_expression(v)}")
+            return "{" + ", ".join(pairs) + "}" 
+        if isinstance(expr, TupleLiteral):
+            elements = [self._emit_expression(e) for e in expr.elements]
+            if len(elements) == 1:
+                return f"({elements[0]},)"
+            return f"({', '.join(elements)})"
+        if isinstance(expr, SetLiteral):
+            elements = [self._emit_expression(e) for e in expr.elements]
+            if not elements:
+                return "set()"
+            return f"{{{', '.join(elements)}}}"
+        if isinstance(expr, ListComprehension):
+            element = self._emit_expression(expr.element)
+            target = to_python_name(expr.target)
+            iterable = self._emit_expression(expr.iterable)
+            condition_str = ""
+            if expr.condition:
+                condition_str = f" if {self._emit_expression(expr.condition)}"
+            return f"[{element} for {target} in {iterable}{condition_str}]"
         raise TypeError(f"Unknown expression type: {type(expr)}")
 
-    def _emit_function_call(self, node: FunctionCall) -> str:
+    BUILTIN_FUNCTIONS = {
+        "dheerina": "len",
+        "lakkoofsa": "int",
+        "barruu": "str",
+        "galchi": "input",
+        "tarree": "list",
+        "facaasii": "range",
+        "gosa": "type",
+        "ruut": "sqrt",
+        "pao": "pow",
+        "gatsirrii": "abs",
+        "desimaalii": "float",
+        "guddaa": "max",
+        "xiqqaa": "min",
+        "ida'uu": "sum",
+        "naannessi": "round",
+        "bani": "open",
+        "tartiibessi": "sort",
+        "garagalchi": "reverse",
+        "qoqqoodi": "split",
+        "qindeessi": "sorted",
+        "lakkoofsa_waliin": "enumerate",
+        "walitti_hidhi": "zip",
+    }
+
+    BUILTIN_CONSTANTS = {
+        "paayii": "pi",
+    }
+
+    def _emit_call(self, node: Call) -> str:
         args = ", ".join(self._emit_expression(a) for a in node.args)
-        py_name = python_keyword_for_word(node.name) or to_python_name(node.name)
-        if node.name == "maxxansi":
-            return f"print({args})"
-        return f"{py_name}({args})"
+        if isinstance(node.func, Identifier):
+            name = node.func.name
+            py_name = python_keyword_for_word(name) or to_python_name(name)
+            if name == "maxxansi":
+                return f"print({args})"
+            if name in self.BUILTIN_FUNCTIONS:
+                return f"{self.BUILTIN_FUNCTIONS[name]}({args})"
+            return f"{py_name}({args})"
+        
+        func_expr = self._emit_expression(node.func)
+        return f"{func_expr}({args})"

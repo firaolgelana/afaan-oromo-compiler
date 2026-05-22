@@ -53,7 +53,8 @@ class ProjectCompiler:
                         None,
                         name=normalize_import_spec(stmt.module),
                     )
-                self._compile_recursive(dep, stack, is_entry=False)
+                if dep is not None:
+                    self._compile_recursive(dep, stack, is_entry=False)
 
         generator = PythonGenerator()
         out = output_path_for(

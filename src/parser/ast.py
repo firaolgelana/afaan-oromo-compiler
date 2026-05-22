@@ -26,6 +26,8 @@ Statement = Union[
     "Del",
     "Yield",
     "With",
+    "AugAssign",
+    "IncDecStmt",
 ]
 
 Expression = Union[
@@ -35,8 +37,16 @@ Expression = Union[
     "NoneLiteral",
     "BinaryOp",
     "UnaryOp",
-    "FunctionCall",
+    "Call",
     "Await",
+    "StringLiteral",
+    "Subscript",
+    "Attribute",
+    "Dictionary",
+    "ListLiteral",
+    "TupleLiteral",
+    "SetLiteral",
+    "ListComprehension",
 ]
 
 
@@ -48,6 +58,11 @@ class Program:
 @dataclass
 class Number:
     value: Union[int, float]
+
+
+@dataclass
+class StringLiteral:
+    value: str
 
 
 @dataclass
@@ -85,8 +100,22 @@ class Await:
 
 @dataclass
 class Assign:
-    name: str
+    target: Expression
     value: Expression
+
+
+@dataclass
+class AugAssign:
+    target: Expression
+    op: str
+    value: Expression
+
+
+@dataclass
+class IncDecStmt:
+    target: Expression
+    op: str
+    is_postfix: bool
 
 
 @dataclass
@@ -129,12 +158,54 @@ class FunctionDef:
 class ClassDef:
     name: str
     body: List[Statement]
+    base_class: Optional[Expression] = None
 
 
 @dataclass
-class FunctionCall:
-    name: str
+class Call:
+    func: Expression
     args: List[Expression]
+
+
+@dataclass
+class Subscript:
+    value: Expression
+    index: Expression
+
+
+@dataclass
+class Attribute:
+    value: Expression
+    attr: str
+
+
+@dataclass
+class Dictionary:
+    keys: List[Expression]
+    values: List[Expression]
+
+
+@dataclass
+class ListLiteral:
+    elements: List[Expression]
+
+
+@dataclass
+class TupleLiteral:
+    elements: List[Expression]
+
+
+@dataclass
+class SetLiteral:
+    elements: List[Expression]
+
+
+@dataclass
+class ListComprehension:
+    element: Expression
+    target: str
+    iterable: Expression
+    condition: Optional[Expression] = None
 
 
 @dataclass

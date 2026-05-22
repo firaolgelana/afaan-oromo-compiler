@@ -1,0 +1,35 @@
+# Dictionary
+namoota = {"maqaa": "Abdii", "umrii": 25}
+maxxansi(namoota["maqaa"])
+
+# List and indexing
+t = [10, 20, 30]
+maxxansi(t[0])
+t[1] = 50
+maxxansi(t[1])
+
+# Augmented assignment
+x = 5
+x += 3
+maxxansi(x)
+
+# ++ and --
+x++
+maxxansi(x)
+--x
+maxxansi(x)
+
+# Dot notation (string method)
+barruu_xiqqaa = "hello"
+maxxansi(barruu_xiqqaa.upper())
+
+# Modulo
+maxxansi(10 % 3)
+
+# Not equal
+yoo (x != 0) {
+    maxxansi("x is not 0")
+}
+
+# Double quotes
+maxxansi("double quotes work!")

@@ -98,9 +98,29 @@ class Lexer:
         return Token(TokenType.IDENTIFIER, ident, start_line, start_col)
 
     def read_string(self, start_line: int, start_col: int) -> Token:
-        quote = self.advance()  # opening "
+        quote = self.advance()
+        is_triple = False
+        if self.current_char == quote and self.peek(1) == quote:
+            is_triple = True
+            self.advance()
+            self.advance()
+            
         value = ""
-        while self.current_char is not None and self.current_char != quote:
+        closed = False
+        while self.current_char is not None:
+            if is_triple:
+                if self.current_char == quote and self.peek(1) == quote and self.peek(2) == quote:
+                    self.advance()
+                    self.advance()
+                    self.advance()
+                    closed = True
+                    break
+            else:
+                if self.current_char == quote:
+                    self.advance()
+                    closed = True
+                    break
+            
             if self.current_char == "\\":
                 self.advance()
                 esc = self.current_char
@@ -109,9 +129,10 @@ class Lexer:
                 value += self.advance() or ""
             else:
                 value += self.advance()
-        if self.current_char != quote:
+                
+        if not closed:
             self.diagnostics.raise_error("invalid_syntax", self.location())
-        self.advance()  # closing "
+            
         return Token(TokenType.STRING, value, start_line, start_col)
 
     def tokenize(self) -> list[Token]:
@@ -138,10 +159,22 @@ class Lexer:
                     continue
 
                 two = ch + (self.peek(1) or "")
-                if two == "==":
+                two_map = {
+                    "==": TokenType.EQEQ,
+                    "!=": TokenType.BANGEQ,
+                    "<=": TokenType.LTE,
+                    ">=": TokenType.GTE,
+                    "+=": TokenType.PLUSEQ,
+                    "-=": TokenType.MINUSEQ,
+                    "++": TokenType.PLUSPLUS,
+                    "--": TokenType.MINUSMINUS,
+                    "**": TokenType.STARSTAR,
+                    "//": TokenType.SLASHSLASH,
+                }
+                if two in two_map:
                     self.advance()
                     self.advance()
-                    self._tokens.append(Token(TokenType.EQEQ, "==", start_line, start_col))
+                    self._tokens.append(Token(two_map[two], two, start_line, start_col))
                     continue
 
                 single_map = {
@@ -149,6 +182,7 @@ class Lexer:
                     "-": TokenType.MINUS,
                     "*": TokenType.STAR,
                     "/": TokenType.SLASH,
+                    "%": TokenType.MOD,
                     "=": TokenType.EQ,
                     "<": TokenType.LT,
                     ">": TokenType.GT,
@@ -156,6 +190,10 @@ class Lexer:
                     ")": TokenType.RPAREN,
                     "{": TokenType.LBRACE,
                     "}": TokenType.RBRACE,
+                    "[": TokenType.LBRACKET,
+                    "]": TokenType.RBRACKET,
+                    ".": TokenType.DOT,
+                    ":": TokenType.COLON,
                     ",": TokenType.COMMA,
                 }
                 if ch in single_map:
