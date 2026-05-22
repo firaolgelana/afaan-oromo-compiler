@@ -7,21 +7,39 @@ from typing import List, Optional
 from ..errors.diagnostics import DiagnosticError, Diagnostics, SourceLocation
 from ..lexer.tokens import Token, TokenType
 from .ast import (
+    Assert,
     Assign,
+    Await,
     BinaryOp,
     Boolean,
+    Break,
+    ClassDef,
+    Continue,
+    Del,
+    ElifBranch,
+    ExceptHandler,
     ExprStmt,
     Expression,
+    ForLoop,
     FunctionCall,
     FunctionDef,
+    GlobalStmt,
     Identifier,
     If,
     Import,
+    NoneLiteral,
+    NonlocalStmt,
     Number,
+    Pass,
     Program,
+    Raise,
     Return,
     Statement,
+    TryStmt,
+    UnaryOp,
     While,
+    With,
+    Yield,
 )
 
 
@@ -87,32 +105,74 @@ class Parser:
             raise
 
     def parse_statement(self) -> Statement:
-        if self.match(TokenType.FUUDHU):
-            return self.parse_import()
-        if self.match(TokenType.HOJII):
+        if self.match(TokenType.IMPORT_LIB, TokenType.FROM):
+            return self.parse_import_from_star()
+        if self.match(TokenType.IMPORT):
+            return self.parse_import_module()
+        if self.match(TokenType.ASYNC):
+            return self.parse_async_function_def()
+        if self.match(TokenType.DEF):
             return self.parse_function_def()
-        if self.match(TokenType.YOO):
+        if self.match(TokenType.CLASS):
+            return self.parse_class_def()
+        if self.match(TokenType.IF):
             return self.parse_if()
-        if self.match(TokenType.HANGA):
+        if self.match(TokenType.WHILE):
             return self.parse_while()
-        if self.match(TokenType.DEEBISI):
+        if self.match(TokenType.FOR):
+            return self.parse_for()
+        if self.match(TokenType.TRY):
+            return self.parse_try()
+        if self.match(TokenType.RETURN):
             return self.parse_return()
+        if self.match(TokenType.YIELD):
+            return self.parse_yield_stmt()
+        if self.match(TokenType.RAISE):
+            return self.parse_raise()
+        if self.match(TokenType.ASSERT):
+            return self.parse_assert()
+        if self.match(TokenType.DEL):
+            return self.parse_del()
+        if self.match(TokenType.GLOBAL):
+            return self.parse_global()
+        if self.match(TokenType.NONLOCAL):
+            return self.parse_nonlocal()
+        if self.match(TokenType.BREAK):
+            self.advance()
+            return Break()
+        if self.match(TokenType.CONTINUE):
+            self.advance()
+            return Continue()
+        if self.match(TokenType.PASS):
+            self.advance()
+            return Pass()
+        if self.match(TokenType.WITH):
+            return self.parse_with()
         if self.match(TokenType.IDENTIFIER) and self.peek(1).type == TokenType.EQ:
             return self.parse_assignment()
-        if self.match(TokenType.MAXXANSI):
-            return self.parse_print_stmt()
+        if self.match(TokenType.PRINT):
+            return ExprStmt(expression=self.parse_print_call())
         if self.match(TokenType.IDENTIFIER) and self.peek(1).type == TokenType.LPAREN:
             return ExprStmt(expression=self.parse_function_call())
 
         self.diagnostics.raise_error("invalid_syntax", self.location())
         raise DiagnosticError(self.diagnostics.MESSAGES["invalid_syntax"], self.location())
 
-    def parse_import(self) -> Import:
-        self.advance()  # fuudhu
+    def parse_import_from_star(self) -> Import:
+        self.advance()  # fuudhu or irraa
+        module = self._read_module_name()
+        return Import(module=module, kind="from_star")
+
+    def parse_import_module(self) -> Import:
+        self.advance()  # fidi
+        module = self._read_module_name()
+        return Import(module=module, kind="import")
+
+    def _read_module_name(self) -> str:
         if self.match(TokenType.STRING):
-            return Import(module=self.advance().value)
+            return self.advance().value
         if self.match(TokenType.IDENTIFIER):
-            return Import(module=self.advance().value)
+            return self.advance().value
         self.diagnostics.raise_error("invalid_syntax", self.location())
         raise DiagnosticError(self.diagnostics.MESSAGES["invalid_syntax"], self.location())
 
@@ -139,23 +199,68 @@ class Parser:
         condition = self.parse_expression()
         self.expect(TokenType.RPAREN)
         then_body = self.parse_block()
+        elif_branches: List[ElifBranch] = []
+        while self.match(TokenType.ELIF):
+            self.advance()
+            self.expect(TokenType.LPAREN)
+            elif_cond = self.parse_expression()
+            self.expect(TokenType.RPAREN)
+            elif_branches.append(ElifBranch(condition=elif_cond, body=self.parse_block()))
         else_body: Optional[List[Statement]] = None
-        if self.match(TokenType.YOOKIIN):
+        if self.match(TokenType.ELSE):
             self.advance()
             else_body = self.parse_block()
-        return If(condition=condition, then_body=then_body, else_body=else_body)
+        return If(
+            condition=condition,
+            then_body=then_body,
+            elif_branches=elif_branches,
+            else_body=else_body,
+        )
 
     def parse_while(self) -> While:
-        self.advance()  # hanga
+        self.advance()
         self.expect(TokenType.LPAREN)
         condition = self.parse_expression()
         self.expect(TokenType.RPAREN)
-        body = self.parse_block()
-        return While(condition=condition, body=body)
+        return While(condition=condition, body=self.parse_block())
 
-    def parse_function_def(self) -> FunctionDef:
-        self.advance()  # hojii
-        name_tok = self.expect(TokenType.IDENTIFIER, "expected_identifier")
+    def parse_for(self) -> ForLoop:
+        self.advance()  # marsaa
+        self.expect(TokenType.LPAREN)
+        target_tok = self.expect(TokenType.IDENTIFIER)
+        if not self.match(TokenType.IN):
+            self.diagnostics.raise_error("invalid_syntax", self.location())
+        self.advance()
+        iterable = self.parse_expression()
+        self.expect(TokenType.RPAREN)
+        return ForLoop(
+            target=target_tok.value,
+            iterable=iterable,
+            body=self.parse_block(),
+        )
+
+    def parse_try(self) -> TryStmt:
+        self.advance()  # yaali
+        body = self.parse_block()
+        handlers: List[ExceptHandler] = []
+        while self.match(TokenType.EXCEPT):
+            self.advance()
+            exc_type: Optional[str] = None
+            if self.match(TokenType.LPAREN):
+                self.advance()
+                if self.match(TokenType.IDENTIFIER):
+                    exc_type = self.advance().value
+                self.expect(TokenType.RPAREN)
+            handlers.append(ExceptHandler(exc_type=exc_type, body=self.parse_block()))
+        finally_body: Optional[List[Statement]] = None
+        if self.match(TokenType.FINALLY):
+            self.advance()
+            finally_body = self.parse_block()
+        return TryStmt(body=body, handlers=handlers, finally_body=finally_body)
+
+    def parse_function_def(self, *, is_async: bool = False) -> FunctionDef:
+        self.advance()  # gocha / hojii
+        name_tok = self.expect(TokenType.IDENTIFIER)
         self.expect(TokenType.LPAREN)
         params: List[str] = []
         if not self.match(TokenType.RPAREN):
@@ -164,20 +269,78 @@ class Parser:
                 self.advance()
                 params.append(self.expect(TokenType.IDENTIFIER).value)
         self.expect(TokenType.RPAREN)
-        body = self.parse_block()
-        return FunctionDef(name=name_tok.value, params=params, body=body)
+        return FunctionDef(
+            name=name_tok.value,
+            params=params,
+            body=self.parse_block(),
+            is_async=is_async,
+        )
+
+    def parse_async_function_def(self) -> FunctionDef:
+        self.advance()  # cinatti
+        if not self.match(TokenType.DEF):
+            self.diagnostics.raise_error("invalid_syntax", self.location())
+        return self.parse_function_def(is_async=True)
+
+    def parse_class_def(self) -> ClassDef:
+        self.advance()  # caasaa
+        name_tok = self.expect(TokenType.IDENTIFIER)
+        return ClassDef(name=name_tok.value, body=self.parse_block())
 
     def parse_return(self) -> Return:
-        self.advance()  # deebisi
-        value = self.parse_expression()
-        return Return(value=value)
+        self.advance()
+        if self.match(TokenType.RBRACE):
+            return Return(value=None)
+        return Return(value=self.parse_expression())
 
-    def parse_print_stmt(self) -> ExprStmt:
-        call = self.parse_maxxansi_call()
-        return ExprStmt(expression=call)
+    def parse_yield_stmt(self) -> Yield:
+        self.advance()
+        if self.match(TokenType.RBRACE):
+            return Yield(value=None)
+        return Yield(value=self.parse_expression())
 
-    def parse_maxxansi_call(self) -> FunctionCall:
-        self.advance()  # maxxansi
+    def parse_raise(self) -> Raise:
+        self.advance()
+        if self.match(TokenType.RBRACE):
+            return Raise(expression=None)
+        return Raise(expression=self.parse_expression())
+
+    def parse_assert(self) -> Assert:
+        self.advance()
+        self.expect(TokenType.LPAREN)
+        condition = self.parse_expression()
+        self.expect(TokenType.RPAREN)
+        return Assert(condition=condition)
+
+    def parse_del(self) -> Del:
+        self.advance()
+        return Del(target=self.parse_expression())
+
+    def parse_global(self) -> GlobalStmt:
+        self.advance()
+        names = [self.expect(TokenType.IDENTIFIER).value]
+        while self.match(TokenType.COMMA):
+            self.advance()
+            names.append(self.expect(TokenType.IDENTIFIER).value)
+        return GlobalStmt(names=names)
+
+    def parse_nonlocal(self) -> NonlocalStmt:
+        self.advance()
+        names = [self.expect(TokenType.IDENTIFIER).value]
+        while self.match(TokenType.COMMA):
+            self.advance()
+            names.append(self.expect(TokenType.IDENTIFIER).value)
+        return NonlocalStmt(names=names)
+
+    def parse_with(self) -> With:
+        self.advance()  # waliin
+        self.expect(TokenType.LPAREN)
+        context = self.parse_expression()
+        self.expect(TokenType.RPAREN)
+        return With(context=context, body=self.parse_block())
+
+    def parse_print_call(self) -> FunctionCall:
+        self.advance()
         self.expect(TokenType.LPAREN)
         args: List[Expression] = []
         if not self.match(TokenType.RPAREN):
@@ -201,14 +364,46 @@ class Parser:
         return FunctionCall(name=name_tok.value, args=args)
 
     def parse_expression(self) -> Expression:
+        return self.parse_or()
+
+    def parse_or(self) -> Expression:
+        left = self.parse_and()
+        while self.match(TokenType.OR):
+            self.advance()
+            right = self.parse_and()
+            left = BinaryOp(left=left, op="or", right=right)
+        return left
+
+    def parse_and(self) -> Expression:
+        left = self.parse_not()
+        while self.match(TokenType.AND):
+            self.advance()
+            right = self.parse_not()
+            left = BinaryOp(left=left, op="and", right=right)
+        return left
+
+    def parse_not(self) -> Expression:
+        if self.match(TokenType.NOT):
+            self.advance()
+            return UnaryOp(op="not", operand=self.parse_not())
+        if self.match(TokenType.AWAIT):
+            self.advance()
+            return Await(expression=self.parse_not())
         return self.parse_comparison()
 
     def parse_comparison(self) -> Expression:
         left = self.parse_additive()
-        while self.match(TokenType.EQEQ, TokenType.LT, TokenType.GT):
+        while self.match(TokenType.EQEQ, TokenType.LT, TokenType.GT, TokenType.IN, TokenType.IS):
             op_tok = self.advance()
+            op_map = {
+                TokenType.EQEQ: "==",
+                TokenType.LT: "<",
+                TokenType.GT: ">",
+                TokenType.IN: "in",
+                TokenType.IS: "is",
+            }
             right = self.parse_additive()
-            left = BinaryOp(left=left, op=op_tok.value, right=right)
+            left = BinaryOp(left=left, op=op_map[op_tok.type], right=right)
         return left
 
     def parse_additive(self) -> Expression:
@@ -238,14 +433,17 @@ class Parser:
         if self.match(TokenType.NUMBER):
             tok = self.advance()
             return Number(value=tok.value)
-        if self.match(TokenType.DHUGAA):
+        if self.match(TokenType.TRUE):
             self.advance()
             return Boolean(value=True)
-        if self.match(TokenType.SOBA):
+        if self.match(TokenType.FALSE):
             self.advance()
             return Boolean(value=False)
-        if self.match(TokenType.MAXXANSI):
-            return self.parse_maxxansi_call()
+        if self.match(TokenType.NONE):
+            self.advance()
+            return NoneLiteral()
+        if self.match(TokenType.PRINT):
+            return self.parse_print_call()
         if self.match(TokenType.IDENTIFIER):
             if self.peek(1).type == TokenType.LPAREN:
                 return self.parse_function_call()

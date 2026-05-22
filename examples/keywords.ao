@@ -1,0 +1,15 @@
+gocha walitti(a, b) {
+    deebisi a + b
+}
+
+yoo (dhugaa fi soba) {
+    dhiisi
+} yookiin {
+    maxxansi(homaa)
+}
+
+marsaa (i keessa range(2)) {
+    maxxansi(walitti(i, 1))
+}
+
+maxxansi(walitti(3, 4))

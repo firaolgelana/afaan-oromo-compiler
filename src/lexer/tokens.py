@@ -1,4 +1,4 @@
-"""Token definitions for the Afaan Oromoo source language."""
+"""Token definitions and Afaan Oromoo → Python keyword mapping."""
 
 from __future__ import annotations
 
@@ -8,16 +8,62 @@ from typing import Any, Optional
 
 
 class TokenType(Enum):
-    # Keywords (Afaan Oromoo)
-    HOJII = auto()       # function def
-    DEEBISI = auto()     # return
-    YOO = auto()         # if
-    YOOKIIN = auto()     # else
-    HANGA = auto()       # while
-    DHUGAA = auto()      # True
-    SOBA = auto()        # False
-    MAXXANSI = auto()    # print
-    FUUDHU = auto()      # import (library)
+    """Token kinds; keyword types align with their Python equivalent."""
+
+    # Core
+    DEF = auto()
+    RETURN = auto()
+    IF = auto()
+    ELSE = auto()
+    WHILE = auto()
+    TRUE = auto()
+    FALSE = auto()
+
+    # Logic & operators (also used as expression keywords)
+    AND = auto()
+    OR = auto()
+    NOT = auto()
+    IN = auto()
+    IS = auto()
+
+    # Loops & flow
+    ELIF = auto()
+    FOR = auto()
+    BREAK = auto()
+    CONTINUE = auto()
+    NONE = auto()
+    PASS = auto()
+
+    # Errors
+    TRY = auto()
+    EXCEPT = auto()
+    FINALLY = auto()
+    RAISE = auto()
+    ASSERT = auto()
+
+    # OOP & builtins
+    CLASS = auto()
+    DEL = auto()
+
+    # Imports
+    IMPORT = auto()
+    FROM = auto()
+    AS = auto()
+    IMPORT_LIB = auto()  # fuudhu: from <module> import *
+
+    # Scope
+    GLOBAL = auto()
+    NONLOCAL = auto()
+
+    # Async & generators
+    YIELD = auto()
+    ASYNC = auto()
+    AWAIT = auto()
+
+    # Misc
+    LAMBDA = auto()
+    WITH = auto()
+    PRINT = auto()  # maxxansi → print
 
     # Literals & identifiers
     STRING = auto()
@@ -29,8 +75,8 @@ class TokenType(Enum):
     MINUS = auto()
     STAR = auto()
     SLASH = auto()
-    EQ = auto()          # =
-    EQEQ = auto()        # ==
+    EQ = auto()
+    EQEQ = auto()
     LT = auto()
     GT = auto()
 
@@ -46,17 +92,64 @@ class TokenType(Enum):
     EOF = auto()
 
 
-# Map keyword spellings to token types
-KEYWORDS: dict[str, TokenType] = {
-    "hojii": TokenType.HOJII,
-    "deebisi": TokenType.DEEBISI,
-    "yoo": TokenType.YOO,
-    "yookiin": TokenType.YOOKIIN,
-    "hanga": TokenType.HANGA,
-    "dhugaa": TokenType.DHUGAA,
-    "soba": TokenType.SOBA,
-    "maxxansi": TokenType.MAXXANSI,
-    "fuudhu": TokenType.FUUDHU,
+# Afaan Oromoo spelling → (token type, Python keyword)
+# Legacy spellings (hojii, fuudhu, maxxansi) kept for existing .ao files.
+KEYWORD_SPECS: dict[str, tuple[TokenType, str]] = {
+    # 1. Core
+    "gocha": (TokenType.DEF, "def"),
+    "hojii": (TokenType.DEF, "def"),
+    "deebisi": (TokenType.RETURN, "return"),
+    "yoo": (TokenType.IF, "if"),
+    "yookiin": (TokenType.ELSE, "else"),
+    "hanga": (TokenType.WHILE, "while"),
+    "dhugaa": (TokenType.TRUE, "True"),
+    "soba": (TokenType.FALSE, "False"),
+    # 2. Logic & operators
+    "fi": (TokenType.AND, "and"),
+    "yookaan": (TokenType.OR, "or"),
+    "miti": (TokenType.NOT, "not"),
+    "keessa": (TokenType.IN, "in"),
+    "dha": (TokenType.IS, "is"),
+    # 3. Loops & flow
+    "yookaas": (TokenType.ELIF, "elif"),
+    "marsaa": (TokenType.FOR, "for"),
+    "dhaabi": (TokenType.BREAK, "break"),
+    "fufi": (TokenType.CONTINUE, "continue"),
+    "homaa": (TokenType.NONE, "None"),
+    "dhiisi": (TokenType.PASS, "pass"),
+    # 4. Error handling
+    "yaali": (TokenType.TRY, "try"),
+    "qabi": (TokenType.EXCEPT, "except"),
+    "xumura": (TokenType.FINALLY, "finally"),
+    "darbadhu": (TokenType.RAISE, "raise"),
+    "mirkaneessi": (TokenType.ASSERT, "assert"),
+    # 5. OOP
+    "caasaa": (TokenType.CLASS, "class"),
+    "haqi": (TokenType.DEL, "del"),
+    # 6. Imports
+    "fidi": (TokenType.IMPORT, "import"),
+    "irraa": (TokenType.FROM, "from"),
+    "fuudhu": (TokenType.IMPORT_LIB, "from"),
+    "akka": (TokenType.AS, "as"),
+    # 7. Scope
+    "waliigalaa": (TokenType.GLOBAL, "global"),
+    "ala": (TokenType.NONLOCAL, "nonlocal"),
+    # 8. Generators & async
+    "lakkisi": (TokenType.YIELD, "yield"),
+    "cinatti": (TokenType.ASYNC, "async"),
+    "eegi": (TokenType.AWAIT, "await"),
+    # 9. Misc
+    "dhokataa": (TokenType.LAMBDA, "lambda"),
+    "waliin": (TokenType.WITH, "with"),
+    "maxxansi": (TokenType.PRINT, "print"),
+}
+
+# Quick lookup: spelling → token type (for lexer)
+KEYWORDS: dict[str, TokenType] = {k: v[0] for k, v in KEYWORD_SPECS.items()}
+
+# Token type → Python keyword (for codegen)
+PYTHON_KEYWORD: dict[TokenType, str] = {
+    t: py for t, py in {v[0]: v[1] for v in KEYWORD_SPECS.values()}.items()
 }
 
 
@@ -73,3 +166,12 @@ class Token:
 
 def keyword_token_type(word: str) -> Optional[TokenType]:
     return KEYWORDS.get(word)
+
+
+def python_keyword_for(token_type: TokenType) -> Optional[str]:
+    return PYTHON_KEYWORD.get(token_type)
+
+
+def python_keyword_for_word(word: str) -> Optional[str]:
+    spec = KEYWORD_SPECS.get(word)
+    return spec[1] if spec else None

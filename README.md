@@ -76,17 +76,30 @@ You only edit `.ao` files; `python/` is build output (ignored by git).
 
 ## Keywords (Afaan Oromoo → Python)
 
-| Afaan Oromoo | Meaning | Python |
-|--------------|---------|--------|
-| `hojii` | function | `def` |
-| `deebisi` | return | `return` |
-| `yoo` | if | `if` |
-| `yookiin` | else | `else` |
-| `hanga` | while | `while` |
-| `dhugaa` | true | `True` |
-| `soba` | false | `False` |
-| `maxxansi` | print | `print` |
-| `fuudhu` | import library | `from … import *` |
+All keywords are defined in `src/lexer/tokens.py` (`KEYWORD_SPECS`) and mapped automatically in generated Python.
+
+| Afaan Oromoo | Python | Afaan Oromoo | Python |
+|--------------|--------|--------------|--------|
+| `gocha` / `hojii` | `def` | `deebisi` | `return` |
+| `yoo` | `if` | `yookiin` | `else` |
+| `yookaas` | `elif` | `hanga` | `while` |
+| `marsaa` | `for` | `dhaabi` | `break` |
+| `fufi` | `continue` | `dhiisi` | `pass` |
+| `dhugaa` | `True` | `soba` | `False` |
+| `homaa` | `None` | `fi` | `and` |
+| `yookaan` | `or` | `miti` | `not` |
+| `keessa` | `in` | `dha` | `is` |
+| `yaali` | `try` | `qabi` | `except` |
+| `xumura` | `finally` | `darbadhu` | `raise` |
+| `mirkaneessi` | `assert` | `caasaa` | `class` |
+| `haqi` | `del` | `fidi` | `import` |
+| `irraa` / `fuudhu` | `from` | `akka` | `as` |
+| `waliigalaa` | `global` | `ala` | `nonlocal` |
+| `lakkisi` | `yield` | `cinatti` | `async` |
+| `eegi` | `await` | `dhokataa` | `lambda` |
+| `waliin` | `with` | `maxxansi` | `print` |
+
+`fuudhu math` and `irraa math` both emit `from math import *`. `fidi math` emits `import math`.
 
 ## Syntax
 
@@ -120,7 +133,7 @@ Semicolons (`;`) are **not** used.
 ### Functions
 
 ```text
-hojii ida'uu(a, b) {
+gocha ida'uu(a, b) {
     deebisi a + b
 }
 
