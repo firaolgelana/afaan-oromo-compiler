@@ -1,0 +1,37 @@
+{
+  "name": "oromolang",
+  "displayName": "OromoLang",
+  "description": "Syntax highlighting for Afaan Oromoo (.ao) source files",
+  "version": "0.1.0",
+  "publisher": "afaan-oromo-lang",
+  "license": "MIT",
+  "engines": {
+    "vscode": "^1.74.0"
+  },
+  "categories": [
+    "Programming Languages"
+  ],
+  "contributes": {
+    "languages": [
+      {
+        "id": "oromo",
+        "aliases": [
+          "OromoLang",
+          "Oromo",
+          "Afaan Oromoo"
+        ],
+        "extensions": [
+          ".ao"
+        ],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "oromo",
+        "scopeName": "source.oromo",
+        "path": "./syntaxes/oromo.tmLanguage.json"
+      }
+    ]
+  }
+}

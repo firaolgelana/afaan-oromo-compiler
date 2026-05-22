@@ -1,0 +1,87 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "OromoLang",
+  "scopeName": "source.oromo",
+  "patterns": [
+    { "include": "#comments" },
+    { "include": "#strings" },
+    { "include": "#numbers" },
+    { "include": "#keywords" },
+    { "include": "#operators" },
+    { "include": "#builtin-functions" },
+    { "include": "#identifiers" }
+  ],
+  "repository": {
+    "comments": {
+      "patterns": [
+        {
+          "name": "comment.line.number-sign.oromo",
+          "match": "#.*$"
+        }
+      ]
+    },
+    "strings": {
+      "patterns": [
+        {
+          "name": "string.quoted.double.oromo",
+          "begin": "\"",
+          "end": "\"",
+          "patterns": [
+            {
+              "name": "constant.character.escape.oromo",
+              "match": "\\\\."
+            }
+          ]
+        }
+      ]
+    },
+    "numbers": {
+      "patterns": [
+        {
+          "name": "constant.numeric.oromo",
+          "match": "\\b\\d+(?:\\.\\d+)?\\b"
+        }
+      ]
+    },
+    "keywords": {
+      "patterns": [
+        {
+          "name": "keyword.control.oromo",
+          "match": "\\b(?:gocha|deebisi|yoo|yookiin|hanga|yookaas|marsaa|citi|tarkaanfadhu|homaa|dhiisi|yaali|qabi|xumura|darbadhu|mirkaneessi|caasaa|haqi|fidi|irraa|akka|waliigalaa|ala|lakkisi|cinatti|eegi|dhokataa|waliin)\\b"
+        },
+        {
+          "name": "constant.language.boolean.oromo",
+          "match": "\\b(?:dhugaa|soba)\\b"
+        }
+      ]
+    },
+    "operators": {
+      "patterns": [
+        {
+          "name": "keyword.operator.oromo",
+          "match": "\\b(?:fi|yookaan|miti|keessa|dha)\\b"
+        },
+        {
+          "name": "keyword.operator.oromo",
+          "match": "==|<=|>=|<|>|\\+|-|\\*|/|="
+        }
+      ]
+    },
+    "builtin-functions": {
+      "patterns": [
+        {
+          "name": "support.function.oromo",
+          "match": "\\b(?:maxxansi|ibsi)\\b"
+        }
+      ]
+    },
+    "identifiers": {
+      "patterns": [
+        {
+          "name": "variable.other.oromo",
+          "match": "[a-zA-Z_'][a-zA-Z0-9_']*"
+        }
+      ]
+    }
+  }
+}

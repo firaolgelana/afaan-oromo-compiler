@@ -1,3 +1,14 @@
-maxxansi(10)
-maxxansi(5)
-maxxansi(9)
+gocha laali(x){
+    deebisi x + 5
+}
+
+y = laali(4)
+maxxansi(y)
+x = 4
+yoo (y > 5) {
+    maxxansi(y)
+} yookaas (y == 0) {
+    dhiisi
+} yookiin {
+    maxxansi(homaa)
+}
