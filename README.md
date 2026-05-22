@@ -10,21 +10,41 @@ Write programs in **Afaan Oromoo** (`.ao` files); the transpiler compiles them t
 
 ## Getting started (new users — after `git clone`)
 
-GitHub only ships the **compiler and examples**. It does **not** copy your personal `~/.bashrc` / `~/.zshrc` aliases or nano settings — each person runs setup once on their machine.
+GitHub only ships the **compiler and examples**. It does **not** copy your personal shell aliases or editor settings — each person runs setup once on their machine.
+
+### Linux / macOS
 
 ```bash
-git clone https://github.com/YOUR_USER/afaan-oromo-lang.git
+git clone https://github.com/firaolgelana/afaan-oromo-lang.git
 cd afaan-oromo-lang
 ./install.sh
 ```
 
-That installs two global commands: **`aoc`** (run) and **`ao`** (compile). Then, from any folder:
+### Windows
+
+Use **PowerShell** (or Windows Terminal) in the cloned folder:
+
+```powershell
+git clone https://github.com/firaolgelana/afaan-oromo-lang.git
+cd afaan-oromo-lang
+.\install.ps1
+```
+
+| Windows environment | `./install.sh` | `.\install.ps1` | `pip install -e .` |
+|---------------------|----------------|-----------------|----------------------|
+| PowerShell / CMD | No | **Yes** | **Yes** |
+| Git Bash | **Yes** | Yes | **Yes** |
+| WSL (Ubuntu, etc.) | **Yes** | — | **Yes** |
+
+Install [Python 3.10+](https://www.python.org/) and check **“Add python.exe to PATH”** during setup. If `aoc` is not found after install, open a **new** terminal window.
+
+### After install (all platforms)
 
 ```bash
 aoc path/to/program.ao
 ```
 
-Manual install (same result):
+That installs **`aoc`** (run) and **`ao`** (compile) via pip. Manual install (same result):
 
 ```bash
 pip install -e .
@@ -59,8 +79,8 @@ alias aoc='python3 /path/to/afaan-oromo-lang/run.py'
 | What | Command |
 |------|---------|
 | **Run** (transpile + execute) | `aoc program.ao` |
-| Compile only | `ao program.ao` or `python3 translator.py program.ao` |
-| From repo without pip | `python3 run.py program.ao` or `./ao program.ao` |
+| Compile only | `ao program.ao` or `python translator.py program.ao` |
+| From repo without pip | `python run.py program.ao` (Linux/macOS: `./ao program.ao`) |
 
 Run generated Python manually: `python3 python/test.py`
 
