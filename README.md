@@ -1,70 +1,49 @@
-# Afaan Oromoo Language → Python Transpiler
+# Afaan Oromoo → Python
 
-A beginner-friendly programming language with **Afaan Oromoo** keywords, transpiled to **Python 3** through a real compiler pipeline:
+Write programs in **Afaan Oromoo** (`.ao` files); the transpiler compiles them to Python under `python/` and runs them.
 
 ```
-.ao source  →  Lexer  →  Parser (AST)  →  Code Generator  →  .py  →  Python
+.ao  →  Lexer  →  Parser  →  Code Generator  →  python/*.py  →  Python
 ```
 
-No regex substitution — the implementation uses a traditional lexer, recursive-descent parser, and AST visitor.
+**Requirements:** Python 3.10+
 
-## Requirements
+## How to run
 
-- Python 3.10 or newer
+### 1. Set up the `aoc` alias (recommended)
 
-## Quick start
-
-### 1. Create a program
-
-Save a file named `test.ao` (extension **`.ao`**, not `.io`):
-
-```text
-maxxansi(10)
-maxxansi(5)
-```
-
-**Important:** Save the file (**Ctrl+S** / **Cmd+S**) before running. If the file is empty on disk, nothing will print.
-
-### 2. Run it (recommended — one step)
-
-From the project folder:
+Add to `~/.bashrc` or `~/.zshrc` (use your real project path):
 
 ```bash
-python3 run.py test.ao
+alias aoc='python3 /home/firaol/Documents/Projects/afaan-oromo-lang/run.py'
 ```
 
-This transpiles `test.ao` → `python/test.py` and runs it automatically (your `.ao` source stays in place; generated Python lives under `python/`, like TypeScript’s `outDir`). Expected output:
-
-```text
-10
-5
-```
-
-### 3. Or compile and run separately
+Reload the shell, then run any `.ao` file from anywhere:
 
 ```bash
-# Compile only (creates python/test.py)
-python3 translator.py test.ao
-
-# Run the generated Python yourself
-python3 python/test.py
+aoc test.ao
+aoc examples/hello.ao
 ```
 
-## Commands
+`aoc` transpiles to `python/` and executes the result in one step (like TypeScript compile + run).
 
-| Goal | Command |
+### 2. Other ways
+
+| What | Command |
 |------|---------|
-| **Run** (transpile + execute) | `python3 run.py program.ao` |
-| **Compile only** | `python3 translator.py program.ao` |
-| **Compile and run** | `python3 translator.py program.ao --run` |
-| **Shell shortcut** | `./ao program.ao` |
-| **Alias (like `tsc`)** | `alias aoc='python3 /path/to/afaan-oromo-lang/run.py'` then `aoc test.ao` |
+| Run (transpile + execute) | `python3 run.py program.ao` |
+| Compile only | `python3 translator.py program.ao` |
+| Compile and run | `python3 translator.py program.ao --run` |
+| Shell script | `./ao program.ao` |
+| Installed CLI | `pip install -e .` then `ao program.ao` |
 
-> **Note:** `python3 program.ao` does **not** work — Python cannot read `.ao` syntax directly. Always use `run.py`, `translator.py --run`, or `./ao`.
+Run generated Python manually: `python3 python/test.py`
 
-### Output folder (`python/`)
+> `python3 program.ao` does **not** work — use `aoc`, `run.py`, or `./ao`.
 
-All transpiled `.py` files go under **`python/`** at the project root (configured in `pythoncompiler/`). Example:
+**Save your file** (Ctrl+S) before running. An empty file on disk produces no output.
+
+### Build output (`python/`)
 
 | Source | Generated |
 |--------|-----------|
@@ -72,182 +51,136 @@ All transpiled `.py` files go under **`python/`** at the project root (configure
 | `examples/hello.ao` | `python/examples/hello.py` |
 | `examples/math.ao` (imported) | `python/examples/math_ao.py` |
 
-You only edit `.ao` files; `python/` is build output (ignored by git).
+Edit only `.ao` files; `python/` is generated output (git-ignored).
+
+---
 
 ## Keywords (Afaan Oromoo → Python)
 
-All keywords are defined in `src/lexer/tokens.py` (`KEYWORD_SPECS`) and mapped automatically in generated Python.
+Defined in `src/lexer/tokens.py`. Each keyword maps automatically in generated Python.
 
-| Afaan Oromoo | Python | Afaan Oromoo | Python |
-|--------------|--------|--------------|--------|
-| `gocha` / `hojii` | `def` | `deebisi` | `return` |
-| `yoo` | `if` | `yookiin` | `else` |
-| `yookaas` | `elif` | `hanga` | `while` |
-| `marsaa` | `for` | `dhaabi` | `break` |
-| `fufi` | `continue` | `dhiisi` | `pass` |
-| `dhugaa` | `True` | `soba` | `False` |
-| `homaa` | `None` | `fi` | `and` |
-| `yookaan` | `or` | `miti` | `not` |
-| `keessa` | `in` | `dha` | `is` |
-| `yaali` | `try` | `qabi` | `except` |
-| `xumura` | `finally` | `darbadhu` | `raise` |
-| `mirkaneessi` | `assert` | `caasaa` | `class` |
-| `haqi` | `del` | `fidi` | `import` |
-| `irraa` / `fuudhu` | `from` | `akka` | `as` |
-| `waliigalaa` | `global` | `ala` | `nonlocal` |
-| `lakkisi` | `yield` | `cinatti` | `async` |
-| `eegi` | `await` | `dhokataa` | `lambda` |
-| `waliin` | `with` | `maxxansi` | `print` |
+### Core
 
-`fuudhu math` and `irraa math` both emit `from math import *`. `fidi math` emits `import math`.
+| Afaan Oromoo | Python | Notes |
+|--------------|--------|-------|
+| `gocha` | `def` | function |
+| `hojii` | `def` | legacy alias for `gocha` |
+| `deebisi` | `return` | |
+| `yoo` | `if` | |
+| `yookiin` | `else` | |
+| `hanga` | `while` | |
+| `dhugaa` | `True` | |
+| `soba` | `False` | |
+| `maxxansi` | `print` | |
 
-## Syntax
+### Logic and operators
 
-### Variables and math
+| Afaan Oromoo | Python |
+|--------------|--------|
+| `fi` | `and` |
+| `yookaan` | `or` |
+| `miti` | `not` |
+| `keessa` | `in` |
+| `dha` | `is` |
 
-```text
-x = 10
-y = x + 5 * 2
-```
+### Loops and flow
 
-Operators: `+`, `-`, `*`, `/`, `==`, `<`, `>`
+| Afaan Oromoo | Python |
+|--------------|--------|
+| `yookaas` | `elif` |
+| `marsaa` | `for` |
+| `dhaabi` | `break` |
+| `fufi` | `continue` |
+| `homaa` | `None` |
+| `dhiisi` | `pass` |
 
-### Blocks use `{` `}` (required)
+### Error handling
 
-Indentation in `.ao` is optional; the transpiler emits correct Python indentation.
+| Afaan Oromoo | Python |
+|--------------|--------|
+| `yaali` | `try` |
+| `qabi` | `except` |
+| `xumura` | `finally` |
+| `darbadhu` | `raise` |
+| `mirkaneessi` | `assert` |
+
+### Object-oriented
+
+| Afaan Oromoo | Python |
+|--------------|--------|
+| `caasaa` | `class` |
+| `haqi` | `del` |
+
+### Imports
+
+| Afaan Oromoo | Python | Example |
+|--------------|--------|---------|
+| `fidi` | `import` | `fidi math` → `import math` |
+| `irraa` | `from` | `irraa math` → `from math import *` |
+| `fuudhu` | `from` | `fuudhu math` → `from math import *` (legacy) |
+| `akka` | `as` | |
+
+### Scope
+
+| Afaan Oromoo | Python |
+|--------------|--------|
+| `waliigalaa` | `global` |
+| `ala` | `nonlocal` |
+
+### Generators and async
+
+| Afaan Oromoo | Python |
+|--------------|--------|
+| `lakkisi` | `yield` |
+| `cinatti` | `async` |
+| `eegi` | `await` |
+
+### Other
+
+| Afaan Oromoo | Python |
+|--------------|--------|
+| `dhokataa` | `lambda` |
+| `waliin` | `with` |
+
+---
+
+## Syntax (short)
+
+**Blocks** use `{` `}` (not indentation in `.ao`):
 
 ```text
 yoo (x > 5) {
     maxxansi(x)
+} yookaas (x == 0) {
+    dhiisi
 } yookiin {
-    maxxansi(0)
+    maxxansi(homaa)
 }
 
-hanga (x < 10) {
-    x = x + 1
-}
-```
-
-Semicolons (`;`) are **not** used.
-
-### Functions
-
-```text
 gocha ida'uu(a, b) {
     deebisi a + b
 }
 
-maxxansi(ida'uu(3, 4))
-```
-
-Apostrophes in names (e.g. `ida'uu`) are mapped to underscores in Python (`ida_uu`).
-
-### Import a library (`fuudhu`)
-
-**`examples/math.ao`** — library:
-
-```text
-hojii walitti(a, b) {
-    deebisi a + b
+marsaa (i keessa range(3)) {
+    maxxansi(i)
 }
 ```
 
-**`examples/app.ao`** — main program:
+**Operators:** `+` `-` `*` `/` `==` `<` `>`
+
+**Import a module** (`fuudhu` / `irraa` — looks in the same folder or `lib/`):
 
 ```text
 fuudhu math
 maxxansi(walitti(10, 7))
 ```
 
-Also:
-
-```text
-fuudhu "math.ao"
-```
-
-The compiler looks for the file in:
-
-1. The same folder as the importing `.ao` file
-2. A `lib/` subfolder
-
-Generated files (under `python/`):
-
-- Main program: `app.ao` → `python/examples/app.py`
-- Library: `math.ao` → `python/examples/math_ao.py` (the `_ao` suffix avoids clashing with Python’s built-in `math` module)
-
-Run the example:
+**Examples:** `examples/hello.ao`, `examples/app.ao`, `examples/keywords.ao`
 
 ```bash
-python3 run.py examples/app.ao
+aoc examples/hello.ao
 ```
 
-## Project structure
+## Errors
 
-```
-afaan-oromo-lang/
-├── README.md
-├── translator.py        # CLI: compile / --run
-├── run.py               # CLI: compile + run (shortcut)
-├── ao                   # Shell wrapper for run.py
-├── pyproject.toml
-├── pythoncompiler/      # Output paths (python/ outDir)
-├── python/              # Generated .py (build output)
-├── src/
-│   ├── lexer/           # Tokenizer
-│   ├── parser/          # AST + recursive descent parser
-│   ├── codegen/         # Python code generator
-│   ├── compiler/        # Multi-file / import handling
-│   ├── errors/          # Afaan Oromoo error messages
-│   └── utils/
-└── examples/
-    ├── hello.ao
-    ├── app.ao
-    └── math.ao
-```
-
-## Error messages
-
-Errors are reported in **Afaan Oromoo**, for example:
-
-| Situation | Message |
-|-----------|---------|
-| Missing `}` | `Dogoggora: Mallattoo '}' irraanfatteerta.` |
-| Invalid syntax | `Dogoggora: Caasaa himaa sirrii miti.` |
-| Empty file | `Dogoggora: Faayiliin duwwaa dha. Barruu .ao kee barreessi (Save: Ctrl+S).` |
-| Module not found | `Dogoggora: Faayilii galmee '…' hin argamne.` |
-
-## Optional: shell alias or install
-
-**Alias** (run any `.ao` file; output goes to `python/`):
-
-```bash
-alias aoc='python3 /full/path/to/afaan-oromo-lang/run.py'
-aoc test.ao
-```
-
-**Install** the `ao` command:
-
-```bash
-pip install -e .
-ao test.ao
-```
-
-## Troubleshooting
-
-**Ran `python3 run.py test.ao` but nothing printed**
-
-1. Save `test.ao` in your editor (**Ctrl+S**).
-2. Confirm on disk: `cat test.ao` should show your code.
-3. Check `python/test.py` — it should contain lines like `print(10)`.
-
-**`python3 test.ao` fails**
-
-Use `python3 run.py test.ao` instead. The `.ao` file must be transpiled first (or use `run.py`, which does both steps).
-
-## Example: full program
-
-See `examples/hello.ao` for variables, `yoo` / `yookiin`, `hanga`, and functions.
-
-```bash
-python3 run.py examples/hello.ao
-```
+Messages are in Afaan Oromoo (e.g. missing `}`, empty file, module not found). Save the file if you see an empty-file error.
