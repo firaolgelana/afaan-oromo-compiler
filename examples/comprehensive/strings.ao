@@ -1,0 +1,16 @@
+# strings.ao - Testing string operations
+maxxansi("=== Barruu (Strings) ===")
+
+s = "Afaan Oromoo"
+
+maxxansi("Qubeeguddaa (Upper): " + s.qubeeguddaa())
+maxxansi("Qubeexiqqaa (Lower): " + s.qubeexiqqaa())
+
+s_list = s.qoqqoodi(" ")
+maxxansi("Qoqqoodi (Split): " + barruu(s_list))
+
+# Iterating string
+maxxansi("Qubeewwan:")
+marsaa (q keessa s_list[0]) {
+    maxxansi(q)
+}

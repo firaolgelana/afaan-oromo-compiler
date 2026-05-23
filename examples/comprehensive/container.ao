@@ -1,0 +1,31 @@
+# container.ao - Testing lists, sets, tuples, and dicts
+maxxansi("=== Kuusaa (Containers) ===")
+
+# List / Array (Tarree)
+tar = [10, 20, 30]
+tar.dabali(40)
+maxxansi("Tarree boodatti dabali: ", tar )
+tar.garagalchi()
+maxxansi("Garagalchi (Reverse): " , tar)
+tar.tartiibessi()
+maxxansi("Tartiibessi (Sort): " , tar)
+tar.baasi()
+maxxansi("Baasi (Pop): ", tar)
+
+# Set (Tuuta)
+tu = tuuta([1, 2, 2, 3, 3])
+maxxansi("Tuuta (Set): ", tu)
+
+# Tuple (Tuuta dhaabbataa)
+t_dha = tuuta_dhaabbataa([5, 10, 15])
+maxxansi("Tuuta dhaabbataa: ", t_dha)
+
+# Dictionary (Galmee)
+g = galmee([("maqaa", "Caalaa"), ("umrii", 22)])
+maxxansi("Galmee (Dict): ", g)
+maxxansi("Furtuuwwan (Keys): ", tarree(g.furtuuwwan()))
+maxxansi("Gatiiwwan (Values): " , tarree(g.gatiiwwan()))
+maxxansi("Qabiyyee (Items): " , tarree(g.qabiyyee()))
+
+g["magaalaa"] = "Finfinnee"
+maxxansi("Argadhu (Get 'magaalaa'): ",g.argadhu("magaalaa"))

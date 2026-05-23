@@ -1,0 +1,20 @@
+# builtins.ao - Testing basic I/O and type conversions
+maxxansi("=== Bu'uura (Built-ins) ===")
+
+maqaa = "Oromiyaa"
+maxxansi("Dheerina maqaa: " + barruu(dheerina(maqaa)))
+
+lak = lakkoofsa("10") + 5
+maxxansi("Lakkoofsa: " + barruu(lak))
+
+des = desimaalii("3.14")
+maxxansi("Desimaalii: " + barruu(des))
+
+# Type checking using gosa
+maxxansi(gosa(lak))
+maxxansi(gosa(maqaa))
+maxxansi(gosa(dhugaa))
+maxxansi(gosa(homaa))
+
+# Note: galchi(...) is used for user input.
+# maqaa_kee = galchi("Maqaa kee eenyu? ")

@@ -1,0 +1,32 @@
+# class.ao - Testing Object-Oriented Programming (Caasaa)
+maxxansi("=== Caasaa (Classes & OOP) ===")
+
+caasaa Nama {
+    gocha __jalqaba__(ofii, maqaa, umrii) {
+        ofii.maqaa = maqaa
+        ofii.umrii = umrii
+    }
+
+    gocha of_barsiisi(ofii) {
+        maxxansi("Akkam, maqaan koo " + ofii.maqaa + " jedhama.")
+    }
+}
+
+# Inheritance
+caasaa Barataa(Nama) {
+    gocha __jalqaba__(ofii, maqaa, umrii, qabxii) {
+        ofii.maqaa = maqaa
+        ofii.umrii = umrii
+        ofii.qabxii = qabxii
+    }
+
+    gocha of_barsiisi(ofii) {
+        maxxansi("Akkam, ani barataa dha. Qabxiin koo " + barruu(ofii.qabxii) + " dha.")
+    }
+}
+
+n = Nama("Caalaa", 30)
+n.of_barsiisi()
+
+b = Barataa("Galaanaa", 20, 95)
+b.of_barsiisi()

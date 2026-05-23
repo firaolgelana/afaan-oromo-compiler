@@ -1,0 +1,31 @@
+# control_flow.ao - Testing If, loops, and comprehensions
+maxxansi("=== To'annoo (Control Flow) ===")
+
+# If / Elif / Else
+qabxii = 85
+yoo (qabxii >= 90) {
+    maxxansi("Firii: A")
+} yookaas (qabxii >= 80) {
+    maxxansi("Firii: B")
+} yookiin {
+    maxxansi("Firii: C")
+}
+
+# While loop
+maxxansi("Hanga (While):")
+i = 0
+hanga (i < 3) {
+    maxxansi(i)
+    i++
+}
+
+# For loop
+maxxansi("Marsaa (For):")
+marsaa (x keessa facaasii(3)) {
+    maxxansi(x)
+}
+
+# List Comprehension
+nums = [1, 2, 3, 4]
+c_nums = [x * 2 marsaa x keessa nums yoo x > 2]
+maxxansi("Comprehension (x*2 if x>2): " + barruu(c_nums))
