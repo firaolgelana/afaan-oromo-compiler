@@ -79,6 +79,16 @@ class PythonGenerator:
         "argadhu": "get",
     }
 
+    _GOSA_HELPER = (
+        "def __gosa__(obj):\n"
+        "    _ao_names = {'int': 'lakkoofsa', 'str': 'barruu', 'float': 'desimaalii',\n"
+        "                 'list': 'tarree', 'tuple': 'tuuta_dhaabbataa',\n"
+        "                 'set': 'tuuta', 'dict': 'galmee', 'bool': 'buuleenii',\n"
+        "                 'NoneType': 'homaa'}\n"
+        "    name = type(obj).__name__\n"
+        "    return f\"<caasaa '{_ao_names.get(name, name)}'>\"\n"
+    )
+
     def __init__(self) -> None:
         self._lines: List[str] = []
         self._indent_level = 0
@@ -92,6 +102,9 @@ class PythonGenerator:
             self._emit_import(stmt)
         if imports:
             self._lines.append("")
+
+        # Always inject gosa helper for type checking support
+        self._lines.append(self._GOSA_HELPER)
 
         for stmt in program.statements:
             if not isinstance(stmt, Import):
@@ -335,8 +348,11 @@ class PythonGenerator:
         "barruu": "str",
         "galchi": "input",
         "tarree": "list",
+        "tuuta_dhaabbataa": "tuple",
+        "tuuta": "set",
+        "galmee": "dict",
         "facaasii": "range",
-        "gosa": "type",
+        "gosa": "__gosa__",
         "ruut": "sqrt",
         "pao": "pow",
         "gatsirrii": "abs",

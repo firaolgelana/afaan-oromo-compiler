@@ -1,9 +1,0 @@
-fuudhu herrega
-maxxansi(ruut(16))
-maxxansi(pao(2, 3))
-maxxansi(gatsirrii(-42))
-maxxansi(paayii)
-x = 10
-yoo (x == 5){
-    maxxansi(x)
-}
